@@ -806,10 +806,7 @@ function d20plusMod() {
 			}
 		}
 	};
-	// END ROLL20 CODE
 
-	d20plus.mod._renderAll_middleLayers = new Set(["objects", "background", "foreground"]);
-	// BEGIN ROLL20 CODE
 	d20plus.mod.renderAll = function (e) {
 		const t = e && e.context || this.contextContainer
 			, i = this.getActiveGroup()
@@ -819,18 +816,9 @@ function d20plusMod() {
 			this.clipTo ? fabric.util.clipContext(this, t) : t.save();
 		const r = {
 			map: [],
-			// BEGIN MOD
-			background: [],
-			// END MOD
 			walls: [],
 			objects: [],
-			// BEGIN MOD
-			foreground: [],
-			// END MOD
-			gmlayer: []
-			// BEGIN MOD
-			, weather: [],
-			// END MOD
+			gmlayer: [],
 			_save_map_layer: this._save_map_layer
 		};
 		r[Symbol.iterator] = this._layerIteratorGenerator.bind(r, e);
@@ -843,12 +831,6 @@ function d20plusMod() {
 				r[t].push(e)
 			} else
 				r[window.currentEditingLayer].push(e);
-
-		// BEGIN MOD
-		// Here we get the layers and look if there's a foreground in the current map
-		let layers = d20.engine.canvas._objects.map(it => it.model?.get("layer") || window.currentEditingLayer)
-		const noForegroundLayer = !layers.some(it => it === 'foreground');
-		// END MOD
 
 		for (const [n,a] of r) {
 			switch (a) {
@@ -866,14 +848,6 @@ function d20plusMod() {
 				case "gmlayer":
 					t.globalAlpha = d20.engine.gm_layer_opacity;
 					break;
-				// BEGIN MOD
-				case "background":
-				case "foreground":
-					if (d20plus.mod._renderAll_middleLayers.has(window.currentEditingLayer) && window.currentEditingLayer !== a && window.currentEditingLayer !== "objects") {
-						t.globalAlpha = .45;
-						break;
-					}
-				// END MOD
 				case "objects":
 					if ("map" === window.currentEditingLayer || "walls" === window.currentEditingLayer) {
 						t.globalAlpha = .45;
@@ -902,29 +876,9 @@ function d20plusMod() {
 
 				const n = "image" === i.type.toLowerCase() && i.model.controlledByPlayer(window.currentPlayer.id)
 
-				// BEGIN MOD
-				// If there is a foreground layer, do not give "owned tokens with sight" special treatment;
-				//   render them during the normal render flow (rather than skipping them)
-				 const o = noForegroundLayer ? e && e.owned_with_sight_auras_only : false;
-				// END MOD
 
 				let r = i._model;
-				r && d20.dyn_fog.ready() ? r = i._model.get("has_bright_light_vision") || i._model.get("has_low_light_vision") || i._model.get("has_night_vision") : r && (r = i._model.get("light_hassight")),
-				// BEGIN MOD
-				// We don't draw immediately the token. Instead, we mark it as "to render"
-				o && (!o || n && r) || (toRender = true);
-
-				if (toRender) {
-					// For the token checked "to render", we draw them if
-					//  - we're in a "render everything" call (i.e. no specific `tokens_to_render`), rather than a "render own tokens" call
-					//  - there isn't a foreground layer for the map or
-					//  - is everything but an object
-					if (!e.tokens_to_render || noForegroundLayer || a !== 'objects') {
-						this._draw(t, i);
-					}
-					i.renderingInGroup = null;
-				}
-				// END MOD
+				r && d20.dyn_fog.ready() ? r = i._model.get("has_bright_light_vision") || i._model.get("has_low_light_vision") || i._model.get("has_night_vision") : r && (r = i._model.get("light_hassight"));
 			})
 		}
 		return t.restore(),
@@ -948,24 +902,13 @@ function d20plusMod() {
 		if (!adv_fow_disabled) yield [null, "afow"];
 		if (!grid_before_afow && !grid_hide) yield [null, "grid"];
 
-		// BEGIN MOD
-		yield [this.background, "background"];
-		// END MOD
-
 		yield [this.objects, "objects"];
-
-		// BEGIN MOD
-		yield [this.foreground, "foreground"];
-		// END MOD
 
 		if (window.is_gm) yield [this.gmlayer, "gmlayer"];
 
 		const enable_dynamic_fog = e && e.enable_dynamic_fog;
 		if (d20.dyn_fog.ready() && enable_dynamic_fog) yield [null, "lighting and fog"];
 
-		// BEGIN MOD
-		if (window.is_gm && "weather" === window.currentEditingLayer) yield [this.weather, "weather"];
-		// END MOD
 	};
 	// END ROLL20 CODE
 
@@ -977,17 +920,6 @@ function d20plusMod() {
 			$("#drawingtools .choosepath").show();
 			"polygon" !== d20.engine.mode && $("#drawingtools").hasClass("polygon") && $("#drawingtools").removeClass("polygon").addClass("path");
 
-			// BEGIN MOD
-			if (e.hasClass("chooseweather")) {
-				window.currentEditingLayer = "weather";
-				$("#drawingtools .choosepath").hide();
-				"path" !== d20.engine.mode && $("#drawingtools").removeClass("path").addClass("polygon")
-			} else {
-				e.hasClass("choosebackground") ? window.currentEditingLayer = "background" : e.hasClass("chooseforeground") ? window.currentEditingLayer = "foreground" : e.hasClass("chooseobjects") ? window.currentEditingLayer = "objects" : e.hasClass("choosemap") ? window.currentEditingLayer = "map" : e.hasClass("choosegmlayer") ? window.currentEditingLayer = "gmlayer" : e.hasClass("choosewalls") && (window.currentEditingLayer = "walls",
-					$("#drawingtools .choosepath").hide(),
-				"path" !== d20.engine.mode && $("#drawingtools").removeClass("path").addClass("polygon"));
-			}
-			// END MOD
 			$("#editinglayer").addClass(window.currentEditingLayer);
 			$(document).trigger("d20:editingLayerChanged");
 		});

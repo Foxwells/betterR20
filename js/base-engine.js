@@ -1340,36 +1340,6 @@ function d20plusEngine () {
 		})
 	};
 
-	d20plus.engine.addLayers = () => {
-		d20plus.ut.log("Adding layers");
-
-		d20plus.mod.editingLayerOnclick();
-		if (window.is_gm) {
-			$(`#floatingtoolbar .choosemap`).html(`<span class="pictos" style="padding: 0 3px 0 3px;">@</span> Map`);
-			$(`#floatingtoolbar .choosemap`).after(`
-				<li class="choosebackground">
-					<span class="pictos">a</span>
-					Background
-				</li>
-			`);
-			$(`#floatingtoolbar .chooseobjects`).after(`
-				<li class="chooseforeground">
-					<span class="pictos">B</span>
-					Foreground
-				</li>
-			`);
-			$(`#floatingtoolbar .choosewalls`).after(`
-				<li class="chooseweather">
-					<span class="pictos">C</span>
-					Weather Exclusions
-				</li>
-			`);
-		}
-
-		d20.engine.canvas._renderAll = _.bind(d20plus.mod.renderAll, d20.engine.canvas);
-		d20.engine.canvas._layerIteratorGenerator = d20plus.mod.layerIteratorGenerator;
-	};
-
 	d20plus.engine.removeLinkConfirmation = function () {
 		d20.utils.handleURL = d20plus.mod.handleURL;
 		$(document).off("click", "a").on("click", "a", d20.utils.handleURL);

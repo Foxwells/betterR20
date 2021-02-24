@@ -490,38 +490,7 @@ function baseConfig() {
 		}
 	};
 
-	/*
-	// Left here for future use, in case anything similar is required
-	d20plus.cfg._handleWeatherConfigChange = () => {
-		function handleProp (prop) {
-			const campaignKey = `bR20cfg_${prop}`;
-			if (d20plus.cfg.has("weather", prop)) {
-				Campaign && Campaign.save({[campaignKey]: d20plus.cfg.get("weather", prop)});
-			} else {
-				if (Campaign) {
-					delete Campaign[campaignKey];
-					Campaign.save();
-				}
-			}
-		}
-		if (window.is_gm) {
-			handleProp("weatherType1");
-			handleProp("weatherTypeCustom1");
-			handleProp("weatherSpeed1");
-			handleProp("weatherDir1");
-			handleProp("weatherDirCustom1");
-			handleProp("weatherOscillate1");
-			handleProp("weatherOscillateThreshold1");
-			handleProp("weatherIntensity1");
-			handleProp("weatherTint1");
-			handleProp("weatherTintColor1");
-			handleProp("weatherEffect1");
-		}
-	};
-	*/
-
 	d20plus.cfg.baseHandleConfigChange = () => {
-		// d20plus.cfg._handleWeatherConfigChange();
 		if (d20plus.cfg.has("interface", "toolbarOpacity")) {
 			const v = Math.max(Math.min(Number(d20plus.cfg.get("interface", "toolbarOpacity")), 100), 0);
 			$(`#secondary-toolbar`).css({opacity: v * 0.01});

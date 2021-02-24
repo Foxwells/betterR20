@@ -363,25 +363,8 @@ function baseCss () {
 			r: "padding: 3px; margin: 0; border-bottom: 1px solid #999; display: block; text-align: center; line-height: 22px; font-size: 22px; color: #999; position: relative;"
 		},
 		{
-			s: "#floatinglayerbar.map li.choosemap, #floatinglayerbar.objects li.chooseobjects, #floatinglayerbar.gmlayer li.choosegmlayer, #floatinglayerbar.walls li.choosewalls, #floatinglayerbar.weather li.chooseweather, #floatinglayerbar.foreground li.chooseforeground, #floatinglayerbar.background li.choosebackground",
+			s: "#floatinglayerbar.map li.choosemap, #floatinglayerbar.objects li.chooseobjects, #floatinglayerbar.gmlayer li.choosegmlayer, #floatinglayerbar.walls li.choosewalls",
 			r: "background-color: #54C3E8; color: #333;"
-		},
-		// extra layer buttons
-		{
-			s: "#editinglayer.weather div.submenu li.chooseweather, #editinglayer.foreground div.submenu li.chooseforeground, #editinglayer.background div.submenu li.choosebackground",
-			r: "background-color: #54C3E8; color: #333;"
-		},
-		{
-			s: "#editinglayer.weather .currentselection:after",
-			r: "content: \"C\";"
-		},
-		{
-			s: "#editinglayer.foreground .currentselection:after",
-			r: "content: \"B\";"
-		},
-		{
-			s: "#editinglayer.background .currentselection:after",
-			r: "content: \"a\";"
 		},
 		// adjust the "Talking to Yourself" box
 		{
@@ -408,19 +391,6 @@ function baseCss () {
 		{
 			s: "#editinglayer.walls > .pictos",
 			r: "width: 20px; height: 22px; display: inline-block; text-align: center; font-size: 0.9em;"
-		},
-		// weather config window
-		{
-			s: ".ui-dialog .wth__row",
-			r: "margin-bottom: 10px; align-items: center; padding: 0 0 5px; border-bottom: 1px solid #eee;"
-		},
-		{
-			s: ".wth__row select",
-			r: "margin-bottom: 0"
-		},
-		{
-			s: `.wth__row input[type="range"]`,
-			r: "width: calc(100% - 8px);"
 		},
 		// context menu
 		{

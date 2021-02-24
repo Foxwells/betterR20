@@ -375,18 +375,6 @@ Updated
                 </div>
             </div>
 
-            <!-- BEGIN MOD -->
-            <hr>
-             <div>
-                <div class='pagedetails__header'>
-                    <h3 class='page_title'>Weather</h3>
-                </div>
-                <button class='btn Ve-btn-weather'>
-					Configure
-				</button>
-            </div>
-			<!-- END MOD -->
-
             <!-- * Archive & Delete Buttons */ -->
             <hr>
             <div class='page-buttons d-flex flex-wrap justify-content-between'>
