@@ -479,13 +479,12 @@ function baseUtil () {
 		})
 	};
 
-	d20plus.ut.LAYERS = ["map", "objects", "gmlayer", "walls",];
+	d20plus.ut.LAYERS = ["map", "objects", "gmlayer"];
 	d20plus.ut.layerToName = (l) => {
 		switch (l) {
 			case "map": return "Map";
 			case "objects": return "Objects & Tokens";
 			case "gmlayer": return "GM Info Overlay";
-			case "walls":  return "Dynamic Lighting";
 		}
 	};
 

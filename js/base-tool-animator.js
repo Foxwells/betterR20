@@ -44,12 +44,6 @@ function baseToolAnimator () {
 					add(parsed.layer);
 					break;
 				}
-				case "Lighting":
-				case "LightingExact": {
-					stack.push(parsed.duration || 0);
-					add(parsed.lightRadius, parsed.dimStart, parsed.degrees);
-					break;
-				}
 				case "SetProperty":
 				case "SumProperty": {
 					add(parsed.prop, parsed.value);
@@ -85,8 +79,6 @@ function baseToolAnimator () {
 				case "Layer": out = new d20plus.anim.Layer(json.startTime, json.layer); break;
 				case "SetProperty": out = new d20plus.anim.SetProperty(json.startTime, json.prop, json.value); break;
 				case "SumProperty": out = new d20plus.anim.SumProperty(json.startTime, json.prop, json.value); break;
-				case "Lighting": out = new d20plus.anim.Lighting(json.startTime, json.duration, json.lightRadius, json.dimStart, json.degrees); break;
-				case "LightingExact": out = new d20plus.anim.LightingExact(json.startTime, json.duration, json.lightRadius, json.dimStart, json.degrees); break;
 				case "TriggerMacro": out = new d20plus.anim.TriggerMacro(json.startTime, json.macroName); break;
 				case "TriggerAnimation": out = new d20plus.anim.TriggerAnimation(json.startTime, json.animation); break;
 				default: throw new Error(`Unhandled type "${json._type}"`);
@@ -639,84 +631,6 @@ function baseToolAnimator () {
 			};
 		},
 
-		_BaseLighting: function (startTime, duration, lightRadius, dimStart, degrees) {
-			d20plus.anim._Base.call(this);
-
-			this.serialize = () => {
-				return cleanNulls({
-					...this._serialize(),
-					startTime, duration, lightRadius, dimStart, degrees
-				})
-			};
-		},
-
-		Lighting: function (startTime, duration, lightRadius, dimStart, degrees) {
-			d20plus.anim._BaseLighting.call(this, startTime, duration, lightRadius, dimStart, degrees);
-
-			this.animate = function (token, alpha, delta) {
-				alpha = alpha - this._offset;
-
-				if (alpha >= startTime) {
-					if (this._progress < (1 - Number.EPSILON)) {
-						const mProgress = this._getTickProgress(duration, delta);
-
-						// handle lighting changes
-						if (lightRadius != null) token.attributes.light_radius = Number(token.attributes.light_radius || 0) + mProgress * lightRadius;
-						if (dimStart != null) token.attributes.light_dimradius = Number(token.attributes.light_dimradius || 0) + mProgress * dimStart;
-						if (degrees != null) {
-							if (token.attributes.light_angle === "") token.attributes.light_angle = 360;
-							token.attributes.light_angle = Number(token.attributes.light_angle || 0) + mProgress * degrees;
-						}
-
-						// update progress
-						this._progress += mProgress;
-
-						return true;
-					} else this._hasRun = true;
-				}
-				return false;
-			};
-		},
-
-		LightingExact: function (startTime, duration, lightRadius, dimStart, degrees) {
-			d20plus.anim._BaseLighting.call(this, startTime, duration, lightRadius, dimStart, degrees);
-
-			this.animate = function (token, alpha, delta) {
-				alpha = alpha - this._offset;
-
-				if (alpha >= startTime) {
-					if (this._snapshotDiff == null) {
-						this._snapshotDiff = {
-							lightRadius: (lightRadius || 0) - Number(token.attributes.light_radius || 0),
-							dimStart: (dimStart || 0) - Number(token.attributes.light_dimradius || 0),
-							degrees: (degrees || 0) - Number(token.attributes.light_angle || 0),
-						};
-					}
-
-					if (this._progress < (1 - Number.EPSILON)) {
-						const mProgress = this._getTickProgress(duration, delta);
-
-						// handle lighting changes
-						if (lightRadius != null) token.attributes.light_radius = Number(token.attributes.light_radius) + mProgress * this._snapshotDiff.lightRadius;
-						if (dimStart != null) token.attributes.light_dimradius = Number(token.attributes.light_dimradius) + mProgress * this._snapshotDiff.dimStart;
-						if (degrees != null) token.attributes.light_angle = Number(token.attributes.light_angle) + mProgress * this._snapshotDiff.degrees;
-
-						// update progress
-						this._progress += mProgress;
-
-						if (this.isLastTick()) {
-							if (lightRadius != null) token.attributes.light_radius = lightRadius;
-							if (dimStart != null) token.attributes.light_dimradius = dimStart;
-							if (degrees != null) token.attributes.light_angle = degrees;
-						}
-
-						return true;
-					} else this._hasRun = true;
-				}
-				return false;
-			};
-		},
-
 		TriggerMacro: function (startTime, macroName) {
 			d20plus.anim._Base.call(this);
 
@@ -1036,35 +950,6 @@ function baseToolAnimator () {
 				const nDegrees = tokens[4] === "-" ? null : Number(tokens[4]);
 				if (nDegrees != null && isNaN(nDegrees)) return Command.errPropNum(line, "degrees", tokens[4]);
 
-				if (op === "light") {
-					return new Command(
-						line,
-						null,
-						d20plus.anim.Lighting.bind(null, nStart, nDuration, nLightRadius, nDimStart, nDegrees),
-						{
-							_type: "Lighting",
-							start: nStart,
-							duration: nDuration,
-							lightRadius: nLightRadius,
-							dimStart: nDimStart,
-							degrees: nDegrees
-						}
-					);
-				} else {
-					return new Command(
-						line,
-						null,
-						d20plus.anim.LightingExact.bind(null, nStart, nDuration, nLightRadius, nDimStart, nDegrees),
-						{
-							_type: "LightingExact",
-							start: nStart,
-							duration: nDuration,
-							lightRadius: nLightRadius,
-							dimStart: nDimStart,
-							degrees: nDegrees
-						}
-					);
-				}
 			}
 
 			case "prop":
@@ -2623,41 +2508,6 @@ function baseToolAnimator () {
 
 						break;
 					}
-					case "Lighting":
-					case "LightingExact": {
-						const baseMeta = gui_getBasicRowMeta(myLines, line, true);
-
-						const doUpdate = () => {
-							baseMeta.doUpdate();
-							parsed.lightRadius = $iptLightRadius.val().trim() ? Math.round(Number($iptLightRadius.val())) : null;
-							parsed.dimStart = $iptDimStart.val().trim() ? Math.round(Number($iptDimStart.val())) : null;
-							parsed.degrees = $iptDegrees.val().trim() ? Math.round(Number($iptDegrees.val())) : null;
-							parsed._type = $cbExact.prop("checked") ? "LightingExact" : "Lighting";
-							line.line = d20plus.anim.lineFromParsed(parsed);
-							baseMeta.$dispName.text(parsed._type);
-						};
-
-						const $iptLightRadius = $(`<input type="number" class="full-width mr-2">`).change(() => doUpdate()).val(parsed.lightRadius);
-						const $iptDimStart = $(`<input type="number" class="full-width mr-2">`).change(() => doUpdate()).val(parsed.dimStart);
-						const $iptDegrees = $(`<input type="number" min="0" class="full-width mr-2">`).change(() => doUpdate()).val(parsed.degrees);
-						const $cbExact = $(`<input type="checkbox">`).prop("checked", parsed._type === "MoveExact").change(() => doUpdate());
-
-						gui_$getWrapped("Light Radius", 2, true).appendTo(baseMeta.$wrpHeaders);
-						gui_$getWrapped("Dim Start", 2, true).appendTo(baseMeta.$wrpHeaders);
-						gui_$getWrapped("Angle", 2, true).appendTo(baseMeta.$wrpHeaders);
-						gui_$getWrapped("", 1).appendTo(baseMeta.$wrpHeaders);
-						gui_$getWrapped("Is Exact", 1, true).appendTo(baseMeta.$wrpHeaders);
-
-						gui_$getWrapped($iptLightRadius, 2).appendTo(baseMeta.$wrpInputs);
-						gui_$getWrapped($iptDimStart, 2).appendTo(baseMeta.$wrpInputs);
-						gui_$getWrapped($iptDegrees, 2).appendTo(baseMeta.$wrpInputs);
-						gui_$getWrapped("", 1).appendTo(baseMeta.$wrpInputs);
-						gui_$getWrapped($cbExact, 1).appendTo(baseMeta.$wrpInputs);
-
-						$wrpRows.append(baseMeta.$row);
-
-						break;
-					}
 					case "SetProperty":
 					case "SumProperty": {
 						const baseMeta = gui_getBasicRowMeta(myLines, line, false);
@@ -3213,8 +3063,6 @@ function baseToolAnimator () {
 		"Scale": "scale",
 		"ScaleExact": "scalex",
 		"Layer": "layer",
-		"Lighting": "light",
-		"LightingExact": "lightx",
 		"SetProperty": "prop",
 		"SumProperty": "propSum",
 		"TriggerMacro": "macro",

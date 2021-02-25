@@ -840,12 +840,6 @@ function baseCss () {
 			`
 		},
 		{
-			s: ".anm-edit__gui-row-name--Lighting",
-			r: `
-				background: #00ffb6;
-			`
-		},
-		{
 			s: [
 				".anm-edit__gui-row-name--SetProperty",
 				".anm-edit__gui-row-name--SumProperty"

@@ -834,11 +834,6 @@ function d20plusMod() {
 
 		for (const [n,a] of r) {
 			switch (a) {
-				case "lighting and fog":
-					d20.engine.drawHighlights(this.contextContainer), d20.dyn_fog.render({
-						main_canvas: this.contextContainer.canvas
-					});
-					continue;
 				case "grid":
 					d20.canvas_overlay.drawGrid(t);
 					continue;
@@ -905,9 +900,6 @@ function d20plusMod() {
 		yield [this.objects, "objects"];
 
 		if (window.is_gm) yield [this.gmlayer, "gmlayer"];
-
-		const enable_dynamic_fog = e && e.enable_dynamic_fog;
-		if (d20.dyn_fog.ready() && enable_dynamic_fog) yield [null, "lighting and fog"];
 
 	};
 	// END ROLL20 CODE
